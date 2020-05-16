@@ -26,7 +26,7 @@ function SyncProperties()
 	print('Owned: ', dump(Properties))
 	for k,v in pairs(Properties) do
 		OwnedProperties[v.key] = v
-		OwnedProperties[v.key].keys = json.decode(Properties[v.key]['keys'])
+		OwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
 	end
 	for k,v in pairs(Config.Properties) do
 		local Available = true
