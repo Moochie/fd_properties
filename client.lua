@@ -275,7 +275,7 @@ Citizen.CreateThread(function()
                     		--print('Result:', dump(result))
                     	end)
                     	Citizen.Wait(500)
-                    	if #status ~= 0 then
+                    	if status ~= nil then
 	                		if status[v.key].status == 0 then
 	                    		EnterHouse(Config.Properties[v.key].Exit)
 	                    	end
