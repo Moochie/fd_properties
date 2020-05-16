@@ -130,7 +130,7 @@ AddEventHandler('FD_Properties:SetDoorStatus', function(K, A)
 	local key = K
 	local action = A
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
-	--print(dump(OwnedProperties[key].keys))
+	print(dump(OwnedProperties[key]))
 	
 	if OwnedProperties[key].char_id == CharacterData.charid then
 		if action == 'unlock' then
