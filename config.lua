@@ -23,3 +23,11 @@ Config.Properties = {
 Config.Offices = {
 	{Coords = vector3(-232.43, -854.29, 30.43)}
 }
+
+--[[
+-----------
+To Do List
+-----------
+Lock/Unlock from inside
+Persistant door locked status so it isnt reset when a house is bought
+]]
