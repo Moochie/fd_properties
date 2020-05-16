@@ -23,7 +23,7 @@ function SyncProperties()
 		query = [[SELECT * FROM owned_properties]]
 	})
 	local Properties = Properties['data']
-	--print('Owned: ', dump(Properties))
+	print('Owned: ', dump(Properties))
 	for k,v in pairs(Properties) do
 		OwnedProperties[v.key] = v
 		OwnedProperties[v.key].keys = json.decode(Properties[v.key]['keys'])
