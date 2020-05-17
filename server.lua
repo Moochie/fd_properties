@@ -274,7 +274,7 @@ end)
 
 DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
 	local src = source
-	local PlayersProperties = {}
+	--[[local PlayersProperties = {}
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	for k,v in pairs(OwnedProperties) do
 		if v.char_id == CharacterData.charid then
@@ -286,8 +286,8 @@ DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
 			end
 		end
 	end
-	send(PlayersProperties)
-	--send(OwnedProperties)
+	send(PlayersProperties)]]
+	send(OwnedProperties)
 end)
 
 DRP.NetCallbacks.Register('FD_Properties:GetCharId', function(data, send)

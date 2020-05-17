@@ -305,9 +305,13 @@ Citizen.CreateThread(function()
                     	end)
                     	Citizen.Wait(500)
                     	if status ~= nil then
-                    		for k2,v2 in pairs(status) do
-		                		if v.key == v2.key then
-		                    		EnterHouse(Config.Properties[v.key].Exit)
+                    		if status[k].status == 0 then
+                    			EnterHouse(Config.Properties[v.key].Exit)
+                    		else
+                    			for k2,v2 in pairs(status.keys) do
+		                			if v.key == v2.key then
+		                    			EnterHouse(Config.Properties[v.key].Exit)
+		                    		end
 		                    	end
 	                    	end
                     	end
