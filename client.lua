@@ -35,7 +35,13 @@ RegisterCommand('house', function(source, args, raw)
 				print('Change DA Locks')
 					TriggerServerEvent('FD_Properties:ChangeLocks', v.key)
 			end
-	 end
+	 	end
+	elseif action == 'mortgage' then
+		if args[2] == nil then
+			GetMortgage()
+		else
+			PayMortgage(args[2])
+		end
 	elseif action == 'update' then
 		--Notification that houses updated
 		DrawOwnedBlips()
@@ -139,6 +145,24 @@ function GetOwnedProperties()
 		OwnedProperties = result
 		--print(dump(OwnedProperties))
 	end)
+end
+
+function GetMortgage()
+	DRP.NetCallbacks.Trigger('FD_Properties:GetMortgage', function(result)
+		for k,v in pairs(result) do
+			if v.due == 'True' then
+				drawNotification('House ID: '..v.key..' Due: '..v.mortgage_payments..' Payments of: '..v.mortgage_amount..'. Currently due: ~r~'..v.due)
+			else
+				drawNotification('House ID: '..v.key..' Due: '..v.mortgage_payments..' Payments of: '..v.mortgage_amount..'. Currently due: ~g~'..v.due)
+			end
+		end
+		
+	end)	
+end
+
+function PayMortgage(key)
+	print(key)
+	TriggerServerEvent('FD_Properties:PayMortgage', key)
 end
 
 Citizen.CreateThread(function()

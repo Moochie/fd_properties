@@ -23,7 +23,7 @@ function SyncProperties()
 		query = [[SELECT * FROM owned_properties]]
 	})
 	local Properties = Properties['data']
-	print('Owned: ', dump(Properties))
+	--print('Owned: ', dump(Properties))
 	local NewOwnedProperties = {}
 	for k,v in pairs(Properties) do
 		local PropertyOwned = false
@@ -39,6 +39,7 @@ function SyncProperties()
 		end
 	end
 	OwnedProperties = NewOwnedProperties
+	--print('Owned: ', dump(OwnedProperties))
 	for k,v in pairs(Config.Properties) do
 		local Available = true
 		for k2,v2 in pairs(OwnedProperties) do
@@ -134,6 +135,7 @@ AddEventHandler('FD_Properties:onConnect', function()
 	end
 	--print('Send Player Owned Houses')]]
 	TriggerClientEvent('FD_Properties:SendProperties', src, OwnedProperties)
+	CheckForMortgage(src)
 end)
 
 RegisterServerEvent('FD_Properties:SetDoorStatus')
@@ -201,6 +203,55 @@ AddEventHandler('FD_Properties:ChangeLocks', function(K)
 	end
 end)
 
+RegisterServerEvent('FD_Properties:PayMortgage')
+AddEventHandler('FD_Properties:PayMortgage', function(K)
+	local src = source
+	local key = tonumber(K)
+	local cost = OwnedProperties[key].mortgage_amount
+	local payments = OwnedProperties[key].mortgage_payments
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	if OwnedProperties[key].char_id == CharacterData.charid then
+		if OwnedProperties[key].mortgage_payments > 0 then
+			TriggerEvent('DRP_Bank:GetCharacterMoney', CharacterData.charid, function(characterMoney)
+				local bankBalance = characterMoney.data[1].bank
+				if bankBalance >= cost then
+					newBankBalance = bankBalance-cost
+					--print('Take money')
+					exports['externalsql']:AsyncQuery({
+						query = 'UPDATE characters SET bank = :bank WHERE id = :charid',
+						data = {
+							bank = newBankBalance,
+							charid = CharacterData.charid
+						}
+					})
+					local CurrentTime = os.time(os.date('*t'))
+					local time = OwnedProperties[key].last_payment
+					if (CurrentTime-time) > 604800 then
+						print('Insert into properties')
+						exports['externalsql']:AsyncQuery({
+							query = 'UPDATE `owned_properties` SET `mortgage_payments` = :payments, `last_payment` = :last WHERE `key` = :KEY',
+							data = {
+								payments = (payments-1),
+								last = (time+604800),
+								KEY = key
+							}
+						})
+					else
+						exports['externalsql']:AsyncQuery({
+							query = 'UPDATE `owned_properties` SET `mortgage_payments` = :payments WHERE `key` = :KEY',
+							data = {
+								payments = (payments-1),
+								KEY = key
+							}
+						})
+					end
+					SyncProperties()
+				end
+			end)
+		end
+	end
+end)
+
 --Call Backs
 
 DRP.NetCallbacks.Register("FD_Properties:GetAvailableHouses", function(data, send)
@@ -228,6 +279,43 @@ DRP.NetCallbacks.Register('FD_Properties:GetCharId', function(data, send)
 	local src = source
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	send(CharacterData.charid)
+end)
+
+DRP.NetCallbacks.Register('FD_Properties:GetMortgage', function(data, send)
+	local src = source
+	--[[
+	local MortgagesDue = {}
+	local CurrentTime = os.time(os.date('*t'))-604800
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	for k,v in pairs(OwnedProperties) do
+		if v.char_id == CharacterData.charid then
+			print('Payments', v.mortgage_payments)
+			if v.mortgage_payments > 0 then
+				print('Last', v.last_payment)
+				if v.last_payment < CurrentTime then
+ 					table.insert(MortgagesDue, v.key)
+				end
+			end
+		end
+	end
+	print('dump', dump(MortgagesDue))
+	send(MortgagesDue)
+	]]
+	local PlayersProperties = {}
+	local time = os.time(os.date('*t'))
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	for k,v in pairs(OwnedProperties) do
+		if v.char_id == CharacterData.charid then
+			PlayersProperties[k] = v
+			if (time-604800) > v.last_payment then
+				PlayersProperties[k].due = 'True'
+			else
+				PlayersProperties[k].due = 'False'
+			end
+		end
+	end
+	print(dump(PlayersProperties))
+	send(PlayersProperties)
 end)
 
 --Commands
