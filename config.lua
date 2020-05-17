@@ -18,6 +18,11 @@ Config.Properties = {
 		Entrance 	= vector3(1728.80, 3851.14, 34.78),
 		Exit 	= vector3(1735.42, 3847.77, 29.39)
 	},
+	[4] = {
+		Cost 	= 100,
+		Entrance 	= vector3(1639.61, 3731.55, 35.07),
+		Exit 	= vector3(1643.60, 3736.10, 29.47)
+	}
 }
 
 Config.Offices = {

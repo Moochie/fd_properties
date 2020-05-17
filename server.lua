@@ -124,6 +124,7 @@ end
 RegisterServerEvent('FD_Properties:onConnect')
 AddEventHandler('FD_Properties:onConnect', function()
 	local src = source
+	--[[
 	local PlayersProperties = {}
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	for k,v in pairs(OwnedProperties) do
@@ -131,8 +132,8 @@ AddEventHandler('FD_Properties:onConnect', function()
 			PlayersProperties[k] = v
 		end
 	end
-	--print('Send Player Owned Houses')
-	TriggerClientEvent('FD_Properties:SendProperties', src, PlayersProperties)
+	--print('Send Player Owned Houses')]]
+	TriggerClientEvent('FD_Properties:SendProperties', src, OwnedProperties)
 end)
 
 RegisterServerEvent('FD_Properties:SetDoorStatus')
