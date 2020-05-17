@@ -273,7 +273,21 @@ DRP.NetCallbacks.Register('FD_Properties:GetOwned', function(data, send)
 end)
 
 DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
-	send(OwnedProperties)
+	local src = source
+	local PlayersProperties = {}
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	for k,v in pairs(OwnedProperties) do
+		if v.char_id == CharacterData.charid then
+			PlayersProperties[k] = v
+		end
+		for k2,v2 in pairs(OwnedProperties[k].keys) do
+			if v == CharacterData.charid then
+				PlayersProperties[k] = v
+			end
+		end
+	end
+	send(PlayersProperties)
+	--send(OwnedProperties)
 end)
 
 DRP.NetCallbacks.Register('FD_Properties:GetCharId', function(data, send)
