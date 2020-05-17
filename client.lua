@@ -19,12 +19,16 @@ RegisterCommand('house', function(source, args, raw)
 			end
 		end
 	elseif action == 'givekeys' then
+		local Target, TargetDistance = GetClosestPlayer()
+		local TargetPlayer = GetPlayerServerId(Target)
+		print(TargetPlayer)
+		print(TargetDistance)
 		for k,v in pairs(OwnedProperties) do
-			local Target, TargetDistance = GetClosestPlayer()
 			local distance = GetDistanceBetweenCoords(Coords, Config.Properties[v.key].Entrance)
 			if distance < 3 then
 				if TargetDistance <= 3 then
-					TriggerServerEvent('FD_Properties:GiveKeys', v.key, Target)
+					print('Send Keys')
+					TriggerServerEvent('FD_Properties:GiveKeys', v.key, TargetPlayer)
 				end
 			end
 		end
@@ -386,28 +390,28 @@ end)
 
 
 function GetClosestPlayer()
-	local players = GetPlayers()
-	local closestDistance = -1
-	local closestPlayer = -1
-	local ply = GetPlayerPed(-1)
-	local plyCoords = GetEntityCoords(ply, 0)
-	
-	for index,value in ipairs(players) do
-		local target = GetPlayerPed(value)
-		if(target ~= ply) then
-			local targetCoords = GetEntityCoords(GetPlayerPed(value), 0)
-			local distance = GetDistanceBetweenCoords(targetCoords["x"], targetCoords["y"], targetCoords["z"], plyCoords["x"], plyCoords["y"], plyCoords["z"], true)
-			if(closestDistance == -1 or closestDistance > distance) then
-				closestPlayer = value
-				closestDistance = distance
-			end
-		end
-	end
-	return closestPlayer, closestDistance
+    local players = GetPlayers()
+    local closestDistance = -1
+    local closestPlayer = -1
+    local ply = GetPlayerPed(-1)
+    local plyCoords = GetEntityCoords(ply)
+    
+    for index,value in ipairs(players) do
+        local target = GetPlayerPed(value)
+        if(target ~= ply) then
+            local targetCoords = GetEntityCoords(GetPlayerPed(value))
+            local distance = GetDistanceBetweenCoords(targetCoords["x"], targetCoords["y"], targetCoords["z"], plyCoords["x"], plyCoords["y"], plyCoords["z"], true)
+            if(closestDistance == -1 or closestDistance > distance) then
+                closestPlayer = value
+                closestDistance = distance
+            end
+        end
+    end
+    return closestPlayer, closestDistance
 end
 ---------------------------------------------------------------------------
 function GetPlayers()
-    GetActivePlayers()
+    return GetActivePlayers()
 end
 
 --Draw text above markers

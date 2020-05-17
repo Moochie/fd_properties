@@ -171,12 +171,14 @@ AddEventHandler('FD_Properties:GiveKeys', function(K, T)
 	local target = T
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	local TargetData = exports["drp_id"]:GetCharacterData(target)
+	--print(dump(TargetData))
 	if OwnedProperties[key].char_id == CharacterData.charid then
 		table.insert(OwnedProperties[key].keys, TargetData.charid)
+		--print('Dump: ', dump(OwnedProperties[key].keys))
 		exports['externalsql']:AsyncQuery({
 				query = 'UPDATE `owned_properties` SET `keys` = :NewKeys WHERE `key` = :key',
 				data = {
-					NewKeys = OwnedProperties[key].keys,
+					NewKeys = json.encode(OwnedProperties[key].keys),
 					key = key
 				}
 			})
@@ -306,10 +308,12 @@ DRP.NetCallbacks.Register('FD_Properties:GetMortgage', function(data, send)
 	for k,v in pairs(OwnedProperties) do
 		if v.char_id == CharacterData.charid then
 			PlayersProperties[k] = v
-			if (time-604800) > v.last_payment then
-				PlayersProperties[k].due = 'True'
-			else
-				PlayersProperties[k].due = 'False'
+			if v.last_payment ~= nil then
+				if (time-604800) > v.last_payment then
+					PlayersProperties[k].due = 'True'
+				else
+					PlayersProperties[k].due = 'False'
+				end
 			end
 		end
 	end
