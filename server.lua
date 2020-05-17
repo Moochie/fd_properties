@@ -6,8 +6,8 @@ AddEventHandler('fd_p:test', function()
 	SyncProperties()
 end)
 
-RegisterServerEvent('fd_properties:PurchaseHouse')
-AddEventHandler('fd_properties:PurchaseHouse', function(Key, paymentOption)
+RegisterServerEvent('FD_Properties:PurchaseHouse')
+AddEventHandler('FD_Properties:PurchaseHouse', function(Key, paymentOption)
 	local src = source
 	local key = Key
 	if paymentOption == 'Buy' then
@@ -110,8 +110,8 @@ function MortgageHouse(src, Key)
 	end)
 end
 
-RegisterServerEvent('fd_properties:onConnect')
-AddEventHandler('fd_properties:onConnect', function()
+RegisterServerEvent('FD_Properties:onConnect')
+AddEventHandler('FD_Properties:onConnect', function()
 	local src = source
 	local PlayersProperties = {}
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
@@ -121,7 +121,7 @@ AddEventHandler('fd_properties:onConnect', function()
 		end
 	end
 	--print('Send Player Owned Houses')
-	TriggerClientEvent('fd_properties:SendProperties', src, PlayersProperties)
+	TriggerClientEvent('FD_Properties:SendProperties', src, PlayersProperties)
 end)
 
 RegisterServerEvent('FD_Properties:SetDoorStatus')
@@ -191,11 +191,11 @@ end)
 
 --Call Backs
 
-DRP.NetCallbacks.Register("fd_properties:GetAvailableHouses", function(data, send)
+DRP.NetCallbacks.Register("FD_Properties:GetAvailableHouses", function(data, send)
 	send(AvailableProperties)
 end)
 
-DRP.NetCallbacks.Register('fd_properties:GetOwned', function(data, send)
+DRP.NetCallbacks.Register('FD_Properties:GetOwned', function(data, send)
 	local src = source
 	--[[local PlayersProperties = {}
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
@@ -208,7 +208,7 @@ DRP.NetCallbacks.Register('fd_properties:GetOwned', function(data, send)
 	send(OwnedProperties)
 end)
 
-DRP.NetCallbacks.Register('fd_properties:DoorStatus', function(data, send)
+DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
 	send(OwnedProperties)
 end)
 

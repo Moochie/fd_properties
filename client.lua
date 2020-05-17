@@ -43,8 +43,8 @@ RegisterCommand('house', function(source, args, raw)
 
 end, false)
 
-RegisterNetEvent('fd_properties:SendProperties')
-AddEventHandler('fd_properties:SendProperties', function(OP)
+RegisterNetEvent('FD_Properties:SendProperties')
+AddEventHandler('FD_Properties:SendProperties', function(OP)
 	OwnedProperties = OP
 	DrawOwnedBlips()
 end)
@@ -134,7 +134,7 @@ function ExitHouse(Coords)
 end
 
 function GetOwnedProperties()
-	DRP.NetCallbacks.Trigger('fd_properties:GetOwned', function(result)
+	DRP.NetCallbacks.Trigger('FD_Properties:GetOwned', function(result)
 		OwnedProperties = result
 		--print(dump(OwnedProperties))
 	end)
@@ -173,7 +173,7 @@ Citizen.CreateThread(function()
 		elseif WarMenu.IsMenuOpened('purchase_house') then
 			if WarMenu.Button('Yes') then
 				--Buy House
-				TriggerServerEvent('fd_properties:PurchaseHouse', CurrentHouse, 'Buy')
+				TriggerServerEvent('FD_Properties:PurchaseHouse', CurrentHouse, 'Buy')
 				WarMenu.CloseMenu()
 				CurrentHouse = nil
 				TogglePropertyBlips()
@@ -186,7 +186,7 @@ Citizen.CreateThread(function()
 		elseif WarMenu.IsMenuOpened('mortgage_house') then
 			if WarMenu.Button('Yes') then
 				--Mortgage House
-				TriggerServerEvent('fd_properties:PurchaseHouse', CurrentHouse, 'Mortgage')
+				TriggerServerEvent('FD_Properties:PurchaseHouse', CurrentHouse, 'Mortgage')
 				WarMenu.CloseMenu()
 				CurrentHouse = nil
 				TogglePropertyBlips()
@@ -270,7 +270,7 @@ Citizen.CreateThread(function()
                 DrawMarker(20, Coords.x, Coords.y, Coords.z, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 94, 156, 255, 130, false, true, 2, false, nil, nil, false)
                 if distance < 3 then
                     if IsControlJustReleased(0, 38) then
-                    	DRP.NetCallbacks.Trigger('fd_properties:DoorStatus', function(result)
+                    	DRP.NetCallbacks.Trigger('FD_Properties:DoorStatus', function(result)
                     		status = result
                     		--print('Result:', dump(result))
                     	end)
@@ -324,7 +324,7 @@ Citizen.CreateThread(function()
                 	if tablelength(PropertyBlips) == 0 then
 	                    Draw3DText(v.Coords.x, v.Coords.y, v.Coords.z, '~g~[E]~w~ Show Houses For Sale')
 	                    if IsControlJustReleased(0, 38) then
-	                    	DRP.NetCallbacks.Trigger("fd_properties:GetAvailableHouses", function(result)
+	                    	DRP.NetCallbacks.Trigger("FD_Properties:GetAvailableHouses", function(result)
 	                    		AP = result
 	                    		Citizen.Wait(500)
 	                    		TogglePropertyBlips()
