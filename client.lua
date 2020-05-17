@@ -77,6 +77,7 @@ end
 local CharID = nil
 function DrawOwnedBlips()
 	GetOwnedProperties()
+	Citizen.Wait(2000)
 	if tablelength(OwnedBlips) == 0 then
 			DRP.NetCallbacks.Trigger('FD_Properties:GetCharId', function(result)
 				CharID = result

@@ -24,10 +24,21 @@ function SyncProperties()
 	})
 	local Properties = Properties['data']
 	print('Owned: ', dump(Properties))
+	local NewOwnedProperties = {}
 	for k,v in pairs(Properties) do
-		OwnedProperties[v.key] = v
-		OwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
+		local PropertyOwned = false
+		for k2, v2 in pairs(OwnedProperties) do
+			if v.key == v2.key then
+				PropertyOwned = true	
+			end
+		end
+		NewOwnedProperties[v.key] = v
+		NewOwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
+		if PropertyOwned then
+			NewOwnedProperties[v.key].status = OwnedProperties[v.key].status
+		end
 	end
+	OwnedProperties = NewOwnedProperties
 	for k,v in pairs(Config.Properties) do
 		local Available = true
 		for k2,v2 in pairs(OwnedProperties) do

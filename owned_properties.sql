@@ -26,13 +26,14 @@ CREATE TABLE IF NOT EXISTS `owned_properties` (
   `mortgage_payments` int(11) NOT NULL DEFAULT 0,
   `mortgage_amount` int(11) NOT NULL DEFAULT 0,
   `last_payment` int(11) DEFAULT NULL,
-  `status` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `Index 2` (`char_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4;
 
--- Dumping data for table drp.owned_properties: ~3 rows (approximately)
+-- Dumping data for table drp.owned_properties: ~1 rows (approximately)
 /*!40000 ALTER TABLE `owned_properties` DISABLE KEYS */;
+INSERT INTO `owned_properties` (`id`, `key`, `char_id`, `keys`, `stash`, `mortgage_payments`, `mortgage_amount`, `last_payment`) VALUES
+	(20, 3, 1, '{}', NULL, 0, 0, NULL);
 /*!40000 ALTER TABLE `owned_properties` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
