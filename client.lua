@@ -284,7 +284,7 @@ Citizen.CreateThread(function()
     end
 end)
 
-local status = {}
+--local status = {}
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
@@ -300,21 +300,21 @@ Citizen.CreateThread(function()
                 if distance < 3 then
                     if IsControlJustReleased(0, 38) then
                     	DRP.NetCallbacks.Trigger('FD_Properties:DoorStatus', function(result)
-                    		status = result
+                    		local status = result
                     		--print('Result:', dump(result))
-                    	end)
-                    	Citizen.Wait(500)
-                    	if status ~= nil then
-                    		if status[k].status == 0 then
-                    			EnterHouse(Config.Properties[v.key].Exit)
-                    		else
-                    			for k2,v2 in pairs(status.keys) do
-		                			if v.key == v2.key then
-		                    			EnterHouse(Config.Properties[v.key].Exit)
-		                    		end
+                    		Citizen.Wait(500)
+                    		if status ~= nil then
+	                    		if status[k].status == 0 then
+	                    			EnterHouse(Config.Properties[v.key].Exit)
+	                    		else
+	                    			for k2,v2 in pairs(status.keys) do
+			                			if v.key == v2.key then
+			                    			EnterHouse(Config.Properties[v.key].Exit)
+			                    		end
+			                    	end
 		                    	end
-	                    	end
-                    	end
+                    		end
+                    	end)
                 	end
                 end
             end
