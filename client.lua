@@ -303,11 +303,11 @@ Citizen.CreateThread(function()
                     		local status = result
                     		--print('Result:', dump(result))
                     		Citizen.Wait(500)
-                    		if status ~= nil then
-	                    		if status[k].status == 0 then
+                    		if result ~= nil then
+	                    		if result[k].status == 0 then
 	                    			EnterHouse(Config.Properties[v.key].Exit)
 	                    		else
-	                    			for k2,v2 in pairs(status.keys) do
+	                    			for k2,v2 in pairs(result.keys) do
 			                			if v.key == v2.key then
 			                    			EnterHouse(Config.Properties[v.key].Exit)
 			                    		end
