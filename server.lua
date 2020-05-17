@@ -135,7 +135,6 @@ AddEventHandler('FD_Properties:onConnect', function()
 	end
 	--print('Send Player Owned Houses')]]
 	TriggerClientEvent('FD_Properties:SendProperties', src, OwnedProperties)
-	CheckForMortgage(src)
 end)
 
 RegisterServerEvent('FD_Properties:SetDoorStatus')
