@@ -17,17 +17,21 @@ RegisterCommand('house', function(source, args, raw)
 			if distance < 3 then
 				TriggerServerEvent('FD_Properties:SetDoorStatus', v.key, action)
 			end
+			local distance = GetDistanceBetweenCoords(Coords, Config.Properties[v.key].Exit)
+			if distance < 3 then
+				TriggerServerEvent('FD_Properties:SetDoorStatus', v.key, action)
+			end
 		end
 	elseif action == 'givekeys' then
 		local Target, TargetDistance = GetClosestPlayer()
 		local TargetPlayer = GetPlayerServerId(Target)
-		print(TargetPlayer)
-		print(TargetDistance)
+		--print(TargetPlayer)
+		--print(TargetDistance)
 		for k,v in pairs(OwnedProperties) do
 			local distance = GetDistanceBetweenCoords(Coords, Config.Properties[v.key].Entrance)
 			if distance < 3 then
 				if TargetDistance <= 3 then
-					print('Send Keys')
+					--print('Send Keys')
 					TriggerServerEvent('FD_Properties:GiveKeys', v.key, TargetPlayer)
 				end
 			end
@@ -36,7 +40,7 @@ RegisterCommand('house', function(source, args, raw)
 		for k,v in pairs(OwnedProperties) do
 			local distance = GetDistanceBetweenCoords(Coords, Config.Properties[v.key].Entrance)
 			if distance < 3 then
-				print('Change DA Locks')
+				--print('Change DA Locks')
 					TriggerServerEvent('FD_Properties:ChangeLocks', v.key)
 			end
 	 	end
@@ -309,10 +313,15 @@ Citizen.CreateThread(function()
 	                    			EnterHouse(Config.Properties[v.key].Exit)
 	                    		else
 	                    			if result.player ~= nil then
+	                    				local locked = true
 		                    			for k2,v2 in pairs(result.player) do
 				                			if v.key == v2.key then
+				                				local locked = false
 				                    			EnterHouse(Config.Properties[v.key].Exit)
 				                    		end
+				                    	end
+				                    	if locked then
+				                    		TriggerEvent("DRP_Core:Info", "Housing", "Door is locked.", 2500, true, "leftCenter")
 				                    	end
 			                    	end
 		                    	end

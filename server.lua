@@ -80,7 +80,10 @@ function BuyHouse(src, Key)
 					charid = CharacterData.charid
 				}
 			})
+			TriggerClientEvent("DRP_Core:Info", src, "Real Estate", "You bought this house.", 2500, true, "leftCenter")
 			SyncProperties()
+		else
+			TriggerClientEvent("DRP_Core:Error", src, "Real Estate", "You do not have enough money in your bank.", 2500, true, "leftCenter")
 		end
 	end)
 end
@@ -117,9 +120,24 @@ function MortgageHouse(src, Key)
 					last = time
 				}
 			})
+			TriggerClientEvent("DRP_Core:Info", src, "Real Estate", "You mortgaged this house.", 2500, true, "leftCenter")
 			SyncProperties()
+		else
+			TriggerClientEvent("DRP_Core:Error", src, "Real Estate", "You do not have enough money in your bank.", 2500, true, "leftCenter")
 		end
 	end)
+end
+
+function RemoveProperty(K)
+	local key = K
+	exports['externalsql']:AsyncQuery({
+				query = 'DELETE FROM `owned_properties` WHERE `key` = :Key',
+				data = {
+					Key = key
+				}
+			})
+	Citizen.Wait(5000)
+	SyncProperties()
 end
 
 RegisterServerEvent('FD_Properties:onConnect')
@@ -148,16 +166,20 @@ AddEventHandler('FD_Properties:SetDoorStatus', function(K, A)
 	if OwnedProperties[key].char_id == CharacterData.charid then
 		if action == 'unlock' then
 			OwnedProperties[key].status = 0
+			TriggerClientEvent("DRP_Core:Info", src, "Housing", "Door Unlocked.", 2500, true, "leftCenter")
 		elseif action == 'lock' then
 			OwnedProperties[key].status = 1
+			TriggerClientEvent("DRP_Core:Info", src, "Housing", "Door Locked.", 2500, true, "leftCenter")
 		end
 	end
 	for _,v in pairs(OwnedProperties[key].keys) do
 		if v == CharacterData.charid then
 			if action == 'unlock' then
 				OwnedProperties[key].status = 0
+				TriggerClientEvent("DRP_Core:Info", src, "Housing", "Door Unlocked.", 2500, true, "leftCenter")
 			elseif action == 'lock' then
 				OwnedProperties[key].status = 1
+				TriggerClientEvent("DRP_Core:Info", src, "Housing", "Door Locked.", 2500, true, "leftCenter")
 			end
 			break
 		end
@@ -183,6 +205,8 @@ AddEventHandler('FD_Properties:GiveKeys', function(K, T)
 				}
 			})
 		SyncProperties()
+		TriggerClientEvent("DRP_Core:Info", src, "Housing", "You handed over a set of keys.", 2500, true, "leftCenter")
+		TriggerClientEvent("DRP_Core:Info", target, "Housing", "You were handed keys.", 2500, true, "leftCenter")
 	end 
 end)
 
@@ -202,6 +226,7 @@ AddEventHandler('FD_Properties:ChangeLocks', function(K)
 			})
 		SyncProperties()
 	end
+	TriggerClientEvent("DRP_Core:Info", src, "Housing", "You changed the locks on your house.", 2500, true, "leftCenter")
 end)
 
 RegisterServerEvent('FD_Properties:PayMortgage')
@@ -225,6 +250,7 @@ AddEventHandler('FD_Properties:PayMortgage', function(K)
 							charid = CharacterData.charid
 						}
 					})
+					TriggerClientEvent("DRP_Core:Info", src, "Housing", "You made a Mortgage payment.", 2500, true, "leftCenter")
 					local CurrentTime = os.time(os.date('*t'))
 					local time = OwnedProperties[key].last_payment
 					if (CurrentTime-time) > 604800 then
@@ -247,6 +273,8 @@ AddEventHandler('FD_Properties:PayMortgage', function(K)
 						})
 					end
 					SyncProperties()
+				else
+					TriggerClientEvent("DRP_Core:Error", src, "Real Estate", "You do not have enough money in your bank.", 2500, true, "leftCenter")
 				end
 			end)
 		end
@@ -347,7 +375,25 @@ Citizen.CreateThread(function()
 	SyncProperties()
 end)
   	
-
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(2000)
+		SyncProperties()
+		Citizen.Wait(5000)
+		local Time = os.time(os.date('*t'))
+		local Last = Time-181400
+		for k,v in pairs(OwnedProperties) do
+			if v.mortgage_payments > 0 then
+				local Difference = Time-v.last_payment
+				if Difference > 1814400 then
+					RemoveProperty(v.key)
+				end
+			end
+			Citizen.Wait(10000)
+		end
+		Citizen.Wait(3600000)
+	end
+end)
 
 function dump(o)
    if type(o) == 'table' then
