@@ -134,7 +134,7 @@ AddEventHandler('FD_Properties:onConnect', function()
 		end
 	end
 	--print('Send Player Owned Houses')]]
-	TriggerClientEvent('FD_Properties:SendProperties', src, OwnedProperties)
+	TriggerClientEvent('FD_Properties:SendProperties', src)
 end)
 
 RegisterServerEvent('FD_Properties:SetDoorStatus')
@@ -143,7 +143,7 @@ AddEventHandler('FD_Properties:SetDoorStatus', function(K, A)
 	local key = K
 	local action = A
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
-	print(dump(OwnedProperties[key]))
+	--print(dump(OwnedProperties[key]))
 	
 	if OwnedProperties[key].char_id == CharacterData.charid then
 		if action == 'unlock' then
@@ -228,7 +228,7 @@ AddEventHandler('FD_Properties:PayMortgage', function(K)
 					local CurrentTime = os.time(os.date('*t'))
 					local time = OwnedProperties[key].last_payment
 					if (CurrentTime-time) > 604800 then
-						print('Insert into properties')
+						--print('Insert into properties')
 						exports['externalsql']:AsyncQuery({
 							query = 'UPDATE `owned_properties` SET `mortgage_payments` = :payments, `last_payment` = :last WHERE `key` = :KEY',
 							data = {
@@ -274,20 +274,23 @@ end)
 
 DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
 	local src = source
-	--[[local PlayersProperties = {}
+	local PlayersProperties = {['owned'] = {}, ['player'] = {}}
+	PlayersProperties.owned = OwnedProperties
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	for k,v in pairs(OwnedProperties) do
 		if v.char_id == CharacterData.charid then
-			PlayersProperties[k] = v
+			PlayersProperties.player[k] = v
 		end
 		for k2,v2 in pairs(OwnedProperties[k].keys) do
-			if v == CharacterData.charid then
-				PlayersProperties[k] = v
+			if v2 == CharacterData.charid then
+				PlayersProperties.player[k] = v
 			end
 		end
 	end
-	send(PlayersProperties)]]
-	send(OwnedProperties)
+	send(PlayersProperties)
+	print(dump(PlayersProperties))
+	--print('Print: ', dump(PlayersProperties.player))
+	--send(OwnedProperties, PlayersProperties)
 end)
 
 DRP.NetCallbacks.Register('FD_Properties:GetCharId', function(data, send)
@@ -331,7 +334,7 @@ DRP.NetCallbacks.Register('FD_Properties:GetMortgage', function(data, send)
 			end
 		end
 	end
-	print(dump(PlayersProperties))
+	--print(dump(PlayersProperties))
 	send(PlayersProperties)
 end)
 

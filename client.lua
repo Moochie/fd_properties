@@ -54,8 +54,10 @@ RegisterCommand('house', function(source, args, raw)
 end, false)
 
 RegisterNetEvent('FD_Properties:SendProperties')
-AddEventHandler('FD_Properties:SendProperties', function(OP)
-	OwnedProperties = OP
+AddEventHandler('FD_Properties:SendProperties', function()
+	Citizen.Wait(2000)
+	GetOwnedProperties()
+	Citizen.Wait(2000)
 	DrawOwnedBlips()
 end)
 
@@ -300,17 +302,18 @@ Citizen.CreateThread(function()
                 if distance < 3 then
                     if IsControlJustReleased(0, 38) then
                     	DRP.NetCallbacks.Trigger('FD_Properties:DoorStatus', function(result)
-                    		local status = result
-                    		--print('Result:', dump(result))
                     		Citizen.Wait(500)
                     		if result ~= nil then
-	                    		if result[k].status == 0 then
+                    			local status = tonumber(result.owned[k].status)
+	                    		if status == 0 then
 	                    			EnterHouse(Config.Properties[v.key].Exit)
 	                    		else
-	                    			for k2,v2 in pairs(result.keys) do
-			                			if v.key == v2.key then
-			                    			EnterHouse(Config.Properties[v.key].Exit)
-			                    		end
+	                    			if result.player ~= nil then
+		                    			for k2,v2 in pairs(result.player) do
+				                			if v.key == v2.key then
+				                    			EnterHouse(Config.Properties[v.key].Exit)
+				                    		end
+				                    	end
 			                    	end
 		                    	end
                     		end
