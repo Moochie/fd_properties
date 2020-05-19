@@ -1,5 +1,6 @@
-OwnedProperties = {}
-AvailableProperties = {}
+local OwnedProperties = {}
+local AvailableProperties = {}
+local ForSaleProperties = {}
 
 RegisterServerEvent('fd_p:test')
 AddEventHandler('fd_p:test', function()
@@ -34,6 +35,11 @@ function SyncProperties()
 		end
 		NewOwnedProperties[v.key] = v
 		NewOwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
+		local stash = json.decode(Properties[k]['stash'])
+		local x, y, z = stash.x, stash.y, stash.z
+		print('Stash: ', x,y,z)
+		NewOwnedProperties[v.key].stash = vector3(x,y,z)
+		print(NewOwnedProperties[v.key].stash)
 		if PropertyOwned then
 			NewOwnedProperties[v.key].status = OwnedProperties[v.key].status
 		end
@@ -281,6 +287,84 @@ AddEventHandler('FD_Properties:PayMortgage', function(K)
 	end
 end)
 
+RegisterServerEvent('FD_Properties:SellHouse')
+AddEventHandler('FD_Properties:SellHouse', function(K,A)
+	local src = source
+	local key = K
+	local amount = A
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	if CharacterData.charid == OwnedProperties[key].char_id then
+		ForSaleProperties[key] = OwnedProperties[key]
+		ForSaleProperties[key].amount = amount
+	end
+end)
+
+RegisterServerEvent('FD_Properties:BuyHouse')
+AddEventHandler('FD_Properties:BuyHouse', function(K)
+	local src = source
+	local key = K
+	local cost = ForSaleProperties[key].amount
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	TriggerEvent('DRP_Bank:GetCharacterMoney', CharacterData.charid, function(characterMoney)
+		local bankBalance = characterMoney.data[1].bank
+		if bankBalance >= cost then
+			newBankBalance = bankBalance-cost
+			--Take moeny from buyer
+			exports['externalsql']:AsyncQuery({
+				query = 'UPDATE characters SET bank = :bank WHERE id = :charid',
+				data = {
+					bank = newBankBalance,
+					charid = CharacterData.charid
+				}
+			})
+			--Pay Owner
+			TriggerEvent('DRP_Bank:GetCharacterMoney', CharacterData.charid, function(OwnerMoney)
+				local OwnerBankBalance = OwnerMoney.data[1].bank
+				local NewOwnerBalace = OwnerBankBalance+cost
+				exports['externalsql']:AsyncQuery({
+					query = 'UPDATE characters SET bank = :bank WHERE id = :charid',
+					data = {
+						bank = NewOwnerBalace,
+						charid = CharacterData.charid
+					}
+				})
+			end)
+			--Set new owner
+			exports['externalsql']:AsyncQuery({
+				query = 'UPDATE `owned_properties` SET `char_id` = :charid WHERE `key` = :KEY',
+				data = {
+					charid = CharacterData.charid,
+					KEY = key
+				}
+			})
+			Citizen.Wait(1000)
+			TriggerClientEvent("DRP_Core:Info", src, "Real Estate", "You bought this house.", 2500, true, "leftCenter")
+			SyncProperties()
+		else
+			TriggerClientEvent("DRP_Core:Error", src, "Real Estate", "You do not have enough money in your bank.", 2500, true, "leftCenter")
+		end
+	end)
+end)
+
+RegisterServerEvent('FD_Properties:SetStash')
+AddEventHandler('FD_Properties:SetStash', function(K, C)
+	local src = source
+	local key = K
+	local Coords = {x=C.x, y=C.y, z=C.z}
+	print(dump(Coords))
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	if CharacterData.charid == OwnedProperties[key].char_id then
+		exports['externalsql']:AsyncQuery({
+				query = 'UPDATE `owned_properties` SET `stash` = :NewStash WHERE `key` = :KEY',
+				data = {
+					NewStash = json.encode(Coords),
+					KEY = key
+				}
+			})
+		print('Stash Set')
+	end
+end)
+
 --Call Backs
 
 DRP.NetCallbacks.Register("FD_Properties:GetAvailableHouses", function(data, send)
@@ -316,9 +400,7 @@ DRP.NetCallbacks.Register('FD_Properties:DoorStatus', function(data, send)
 		end
 	end
 	send(PlayersProperties)
-	print(dump(PlayersProperties))
-	--print('Print: ', dump(PlayersProperties.player))
-	--send(OwnedProperties, PlayersProperties)
+	--print(dump(PlayersProperties))
 end)
 
 DRP.NetCallbacks.Register('FD_Properties:GetCharId', function(data, send)
@@ -329,24 +411,6 @@ end)
 
 DRP.NetCallbacks.Register('FD_Properties:GetMortgage', function(data, send)
 	local src = source
-	--[[
-	local MortgagesDue = {}
-	local CurrentTime = os.time(os.date('*t'))-604800
-	local CharacterData = exports["drp_id"]:GetCharacterData(src)
-	for k,v in pairs(OwnedProperties) do
-		if v.char_id == CharacterData.charid then
-			print('Payments', v.mortgage_payments)
-			if v.mortgage_payments > 0 then
-				print('Last', v.last_payment)
-				if v.last_payment < CurrentTime then
- 					table.insert(MortgagesDue, v.key)
-				end
-			end
-		end
-	end
-	print('dump', dump(MortgagesDue))
-	send(MortgagesDue)
-	]]
 	local PlayersProperties = {}
 	local time = os.time(os.date('*t'))
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
@@ -364,6 +428,27 @@ DRP.NetCallbacks.Register('FD_Properties:GetMortgage', function(data, send)
 	end
 	--print(dump(PlayersProperties))
 	send(PlayersProperties)
+end)
+
+DRP.NetCallbacks.Register('FD_Properties:BuyCost', function(data, send)
+	send(ForSaleProperties)
+end)
+
+DRP.NetCallbacks.Register('FD_Properties:CanStash', function(data, send)
+	local src = source
+	local HasKeys = {}
+	local CharacterData = exports["drp_id"]:GetCharacterData(src)
+	for k,v in pairs(OwnedProperties) do
+		if v.char_id == CharacterData.charid then
+			HasKeys[k] = v
+		end
+		for k2,v2 in pairs(OwnedProperties[k].keys) do
+			if v2 == CharacterData.charid then
+				HasKeys[k] = v
+			end
+		end
+	end
+	send(HasKeys)
 end)
 
 --Commands

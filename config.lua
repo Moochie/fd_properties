@@ -33,6 +33,5 @@ Config.Offices = {
 -----------
 To Do List
 -----------
-Lock/Unlock from inside
-Persistant door locked status so it isnt reset when a house is bought
+Stash
 ]]
