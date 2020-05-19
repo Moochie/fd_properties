@@ -37,9 +37,9 @@ function SyncProperties()
 		NewOwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
 		local stash = json.decode(Properties[k]['stash'])
 		local x, y, z = stash.x, stash.y, stash.z
-		print('Stash: ', x,y,z)
+		--print('Stash: ', x,y,z)
 		NewOwnedProperties[v.key].stash = vector3(x,y,z)
-		print(NewOwnedProperties[v.key].stash)
+		--print(NewOwnedProperties[v.key].stash)
 		if PropertyOwned then
 			NewOwnedProperties[v.key].status = OwnedProperties[v.key].status
 		end
@@ -351,7 +351,7 @@ AddEventHandler('FD_Properties:SetStash', function(K, C)
 	local src = source
 	local key = K
 	local Coords = {x=C.x, y=C.y, z=C.z}
-	print(dump(Coords))
+	--print(dump(Coords))
 	local CharacterData = exports["drp_id"]:GetCharacterData(src)
 	if CharacterData.charid == OwnedProperties[key].char_id then
 		exports['externalsql']:AsyncQuery({
@@ -361,7 +361,7 @@ AddEventHandler('FD_Properties:SetStash', function(K, C)
 					KEY = key
 				}
 			})
-		print('Stash Set')
+		--print('Stash Set')
 	end
 end)
 
