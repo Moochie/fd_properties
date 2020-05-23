@@ -454,7 +454,7 @@ Citizen.CreateThread(function()
 		EndTextCommandSetBlipName(blip)
 	end
 	GetOwnedProperties()
-	Citizen.Wait(3000)
+	Citizen.Wait(60000)
 	DrawOwnedBlips()
 end)
 
