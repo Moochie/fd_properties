@@ -54,3 +54,5 @@
 # How to add houses interiors under the map so you can add more properties
 ## I have provided Sandy Shores and Paleto interiors that I had from a previous project.
 ## I will not be providing any support on how to add more
+- Sandy Interiors: https://github.com/Moochie/fd_sandy_interiors
+- Paleto Interiors: https://github.com/Moochie/fd_paleto_interiors
