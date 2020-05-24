@@ -1,5 +1,6 @@
 local PropertyBlips = {}
 local CurrentHouse = nil
+local Rob = nil
 local AP = {}
 local OwnedProperties = {}
 local OwnedBlips = {}
@@ -81,6 +82,44 @@ RegisterCommand('house', function(source, args, raw)
 				TriggerServerEvent('FD_Properties:BuyHouse', v.key)
 			end
 	 	end
+	 elseif action == 'rob' then
+	 	print('Rob')
+	 	local CurrentHouse = CurrentHouse(Coords)
+	 	print(CurrentHouse)
+	 	RobHouse(CurrentHouse)
+
+	 elseif action == 'purchase' then
+	 	if args[2] == 'info' then
+	 		local CurrentHouse = CurrentHouse(Coords)
+	 		local cost = Config.Properties[CurrentHouse].Cost
+			local down = math.ceil(cost*0.05)
+			local weekly = math.ceil((cost-down)/12)
+	 		drawNotification('Cost: '..cost)
+	 		drawNotification('Down Payment: $'..down..'. Weekly: $'..weekly..' for 12 weeks.')
+
+	 	elseif args[2] == 'view' then
+	 		CurrentHouse = CurrentHouse(Coords)
+	 		ViewHouse(CurrentHouse)
+
+	 	elseif args[2] == 'buy' then
+	 		local CurrentHouse = CurrentHouse(Coords)
+	 		TriggerServerEvent('FD_Properties:PurchaseHouse', CurrentHouse, 'Buy')
+	 		CurrentHouse = nil
+	 		Citizen.Wait(1000)
+			TogglePropertyBlips()
+			Citizen.Wait(1000)
+			GetOwnedProperties()
+
+	 	elseif args[2] == 'mortgage' then
+	 		local CurrentHouse = CurrentHouse(Coords)
+	 		TriggerServerEvent('FD_Properties:PurchaseHouse', CurrentHouse, 'Mortgage')
+	 		CurrentHouse = nil
+	 		Citizen.Wait(1000)
+			TogglePropertyBlips()
+			Citizen.Wait(1000)
+			GetOwnedProperties()
+
+	 	end
 	end
 
 end, false)
@@ -161,7 +200,7 @@ end
 
 function LeaveHouse()
 	local ped = PlayerPedId()
-	SetEntityCoords(ped, AP[CurrentHouse].Entrance)
+	SetEntityCoords(ped, Config.Properties[CurrentHouse].Entrance)
 	CurrentHouse = nil
 end
 
@@ -173,6 +212,7 @@ end
 function ExitHouse(Coords)
 	local ped = PlayerPedId()
 	SetEntityCoords(ped, Coords)
+	CurrentHouse = nil
 end
 
 function GetOwnedProperties()
@@ -202,6 +242,49 @@ function SellHouse(A)
 	local amount = A
 end
 
+function CurrentHouse(Coords)
+	for k,v in pairs(Config.Properties) do
+	 	distance = GetDistanceBetweenCoords(Coords, v.Entrance)
+	 	if distance <= 2 then
+	 		print(distance)
+	 		return k
+	 	end
+	 end
+end
+
+function RobHouse(CH)
+	local CurrentHouse = CH
+	DRP.NetCallbacks.Trigger('FD_Properties:DoorStatus', function(result)
+		if result ~= nil then
+			local HasKeys = false
+			for k,v in pairs(result) do
+				if CurrentHouse == result.key then
+					HasKeys = true
+				end
+			end
+			if not HasKeys then
+				BreakIntoHouse(CurrentHouse)
+			else
+				--Can't rob, has keys
+			end
+		end
+	end)
+end
+
+function BreakIntoHouse(Key)
+	local ped = PlayerPedId()
+	local key = Key
+	TaskStartScenarioInPlace(ped, "PROP_HUMAN_BUM_BIN", 0, true)
+	Citizen.Wait(1000)
+	ClearPedTasks(ped)
+	local Coords = GetEntityCoords(ped)
+	local distance = GetDistanceBetweenCoords(Coords, Config.Properties[key].Entrance)
+	if distance <= 2 then
+		SetEntityCoords(ped, Config.Properties[key].Exit)
+		CurrentHouse = key
+	end
+end
+--[[
 Citizen.CreateThread(function()
 	WarMenu.CreateMenu('view_house', 'House Menu')
 	WarMenu.SetSubTitle('view_house', '')
@@ -262,6 +345,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 	end
 end)
+]]
 
 Citizen.CreateThread(function()
     while true do
@@ -269,12 +353,15 @@ Citizen.CreateThread(function()
         local ped = PlayerPedId()
         local playerCoords = GetEntityCoords(ped)
         local letSleep = true
+
         for k,v in pairs(PropertyBlips) do
             local distance = GetDistanceBetweenCoords(playerCoords, v[1], true)
             if distance < Config.Distance then
                 letSleep = false
                 DrawMarker(20, v[1].x, v[1].y, v[1].z-0.40, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0, 255, 0, 200, false, true, 2, false, nil, nil, false)
                 if distance < 3 then
+                	Draw3DText(v[1].x, v[1].y, v[1].z, 'Use /house pruchase')
+                	--[[
                     Draw3DText(v[1].x, v[1].y, v[1].z, '~g~[E]~w~ View House')
                     if IsControlJustReleased(0, 38) then
                     	if not IsPedInAnyVehicle(ped, false) then
@@ -284,15 +371,34 @@ Citizen.CreateThread(function()
                 	end
                 else
                 	WarMenu.CloseMenu()
+                	]]
                 end
             end
         end
+
+        if CurrentHouse ~= nil then
+        	if Config.Properties[CurrentHouse] ~= nil then
+	        	local v = Config.Properties[CurrentHouse]
+	            local distance = GetDistanceBetweenCoords(playerCoords, v.Exit, true)
+	            if distance < Config.Distance then
+	                letSleep = false
+	                DrawMarker(20, v.Exit.x, v.Exit.y, v.Exit.z-0.40, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0, 255, 0, 200, false, true, 2, false, nil, nil, false)
+	                if distance < 3 then
+	                    Draw3DText(v.Exit.x, v.Exit.y, v.Exit.z, '~g~[E]~w~ Leave House')
+	                    if IsControlJustReleased(0, 38) then
+	                        LeaveHouse()
+	                	end
+	                end
+	            end
+	        end
+    	end
         if letSleep then
             Citizen.Wait(500)
         end
     end
 end)
 
+--[[
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
@@ -320,6 +426,7 @@ Citizen.CreateThread(function()
         end
     end
 end)
+]]
 
 --local status = {}
 Citizen.CreateThread(function()

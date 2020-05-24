@@ -35,10 +35,12 @@ function SyncProperties()
 		end
 		NewOwnedProperties[v.key] = v
 		NewOwnedProperties[v.key].keys = json.decode(Properties[k]['keys'])
-		local stash = json.decode(Properties[k]['stash'])
-		local x, y, z = stash.x, stash.y, stash.z
-		--print('Stash: ', x,y,z)
-		NewOwnedProperties[v.key].stash = vector3(x,y,z)
+			local stash = json.decode(Properties[k]['stash'])
+			local x, y, z = stash.x, stash.y, stash.z
+			--print('Stash: ', x,y,z)
+			if stash.x ~= nil then
+			NewOwnedProperties[v.key].stash = vector3(x,y,z)
+		end
 		--print(NewOwnedProperties[v.key].stash)
 		if PropertyOwned then
 			NewOwnedProperties[v.key].status = OwnedProperties[v.key].status
