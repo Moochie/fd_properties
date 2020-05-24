@@ -51,3 +51,6 @@
 - Set the stash location for your current house
 ### /house update
 - Update your owned house on the client if this get weird
+# How to add houses interiors under the map so you can add more properties
+## I have provided Sandy Shores and Paleto interiors that I had from a previous project.
+## I will not be providing any support on how to add more
