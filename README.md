@@ -1,7 +1,7 @@
 [![GitHub Logo](https://i.imgur.com/ZAZBkDh.png)](http://discord.gg/vkrVDnC)
 
 # FD_Properties
-# ---This is not a complete resource!---
+# ---This is not a completed resource!---
 ## This was my first large script and I have learnt a ton by doing it, there is a ton that I would do differently but I am going to start from scratch so I figured I would release this instead of just deleting it, enjoy :)
 
 # Features
